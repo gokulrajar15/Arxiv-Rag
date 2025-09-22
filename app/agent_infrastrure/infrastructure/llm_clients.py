@@ -11,3 +11,9 @@ gpt_41 = AzureChatOpenAI(
     api_key=settings.azure_openai_41_api_key
 )
 
+gpt_41_mini = AzureChatOpenAI(
+    azure_deployment="gpt-4.1-mini",
+    api_version=settings.azure_openai_41_mini_api_version,
+    azure_endpoint=settings.azure_openai_41_mini_endpoint,
+    api_key=settings.azure_openai_41_mini_api_key
+)

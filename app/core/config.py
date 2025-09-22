@@ -90,6 +90,16 @@ class Settings:
         self.azure_openai_41_api_key = os.getenv("azure_openai_41_api_key")
         self.azure_openai_41_api_version = os.getenv("azure_openai_41_api_version") 
 
+        self.azure_openai_41_mini_endpoint = os.getenv("azure_openai_41_mini_endpoint")
+        self.azure_openai_41_mini_api_key = os.getenv("azure_openai_41_mini_api_key")
+        self.azure_openai_41_mini_api_version = os.getenv("azure_openai_41_mini_api_version")
+        
+        self.db_host = os.getenv("HOST")
+        self.db_port = os.getenv("PORT")
+        self.db_database = os.getenv("DATABASE")
+        self.db_user = os.getenv("USER")
+        self.db_password = os.getenv("PASSWORD")
+        self.db_default_schema = os.getenv("DEFAULT_SCHEMA", "public")
 
 # Create settings instance
 settings = Settings()

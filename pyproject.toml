@@ -2,7 +2,7 @@
 name = "arxiv-rag"
 version = "0.1.0"
 description = "Data analysis bot"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 # Added dependencies here
 dependencies = [
     "python-multipart==0.0.20",
@@ -22,10 +22,8 @@ dependencies = [
     "aiohttp==3.11.18",           
     "aiofiles==24.1.0",          
     "langchain-community==0.3.29", 
-    "faiss-cpu==1.11.0",  
     "langchain-experimental==0.3.4",
     "langchain-text-splitters",
-    "msal",
     "flask",
     "flasgger",
     "deepeval"

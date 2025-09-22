@@ -1,8 +1,10 @@
 import asyncio
+import json
 from typing import List
+from urllib import response
 from langchain_core.documents import Document
 from langchain_core.tools import tool
-from app.agent_infrastrure.infrastructure.llm_clients import gpt_41
+from app.agent_infrastrure.infrastructure.llm_clients import gpt_41_mini
 from app.db.client import Database
 from app.agent_infrastrure.infrastructure.embeddings import CustomEmbedding
 from app.agent_infrastrure.prompt_templates import multi_query_retriever_prompt
@@ -30,10 +32,7 @@ def deduplicate_documents(documents: List[Document]) -> List[Document]:
     
     return unique_docs
 
-    
-    return unique_docs
-
-async def multi_query_retriever(query: str) -> List[str]:
+async def multi_query_retriever(query: str, num_queries: int) -> List[str]:
     """
     Generate multiple search queries from the original query
 
@@ -43,13 +42,20 @@ async def multi_query_retriever(query: str) -> List[str]:
     Returns:
         list[str]: A list of generated search queries.
     """
-    retriever = multi_query_retriever_prompt(query)
-    messages = [retriever]
-    response = await gpt_41.ainvoke(messages)
-    queries = response.content.strip().split('\n')
+    messages = multi_query_retriever_prompt(query, num_queries)
+    try:
+        response = await gpt_41_mini.ainvoke(messages)
+    except Exception as e:
+        print(f"Error with gpt_41_mini: {e}")
+        return [query]
+    try:
+        queries = json.loads(response.content)
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
+        queries = [query]
     return queries
 
-async def process_natural_language_query(query: str) -> List[List[float]]:
+async def process_natural_language_query(query: str, num_queries: int) -> List[List[float]]:
     """
     Process a natural language query by:
     1. Passing it to the multi_query_retriever to generate multiple search queries
@@ -61,7 +67,7 @@ async def process_natural_language_query(query: str) -> List[List[float]]:
     Returns:
         List[List[float]]: A list of embeddings for each generated query.
     """
-    multi_queries = await multi_query_retriever(query)
+    multi_queries = await multi_query_retriever(query, num_queries)
     print("multi queries:", multi_queries)
 
     query_embeddings = embed.embed_documents(multi_queries)
@@ -90,12 +96,12 @@ async def document_retriever(user_query: str) -> list[Document]:
     """
     import time
     start_time = time.time()
-    
+    num_queries = 5  # Number of different queries to generate
     try:
         await Database.init()
         
         embedding_start = time.time()
-        query_embeddings, multi_queries = await process_natural_language_query(user_query)
+        query_embeddings, multi_queries = await process_natural_language_query(user_query, num_queries)
         embedding_time = time.time() - embedding_start
         print(f"Embedding generation took: {embedding_time:.2f} seconds")
         
@@ -104,7 +110,7 @@ async def document_retriever(user_query: str) -> list[Document]:
             return []
      
         db_start = time.time()
-        search_results = await Database.fetch_document(query_embeddings, k=5)  
+        search_results = await Database.fetch_batch_vector_search(query_vectors = query_embeddings, limit=5)  
         db_time = time.time() - db_start
         print(f"Database queries took: {db_time:.2f} seconds")
         
@@ -121,13 +127,15 @@ async def document_retriever(user_query: str) -> list[Document]:
         total_time = time.time() - start_time
         print(f"Total retrieval time: {total_time:.2f} seconds")
         print(f"Retrieved {len(search_results)} documents, {len(unique_documents)} unique")
-        
         return unique_documents
-        
-    except Exception as e:  
-        print(f"Error in document_retriever: {str(e)}")
+
+    except Exception as e:
+        print(f"Error in document_retriever: {e}")
+        await Database.close()
         return []
     
+    finally:
+        await Database.close()
 
 def docs_to_dicts(docs: List[Document]) -> List[dict]:
     """Helper for DeepEval + API responses."""

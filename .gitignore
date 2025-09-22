@@ -2,6 +2,7 @@
 .venv
 venv/
 env/
+.deepeval/
 
 # Environment variables
 .env

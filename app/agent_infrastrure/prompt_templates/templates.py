@@ -19,17 +19,31 @@ Follow these rules:
 """
     }]
 
-def multi_query_retriever_prompt(question: str):
-    return {
+def multi_query_retriever_prompt(question: str, number_of_queries: int = 5):
+    return [{
         "role": "system",
         "content": f""" 
-You are an AI language model assistant. Your task is to generate five 
-different versions of the given user question to retrieve relevant documents from a vector 
-database. By generating multiple perspectives on the user question, your goal is to help
-the user overcome some of the limitations of the distance-based similarity search. 
-Provide these alternative questions separated by newlines. Original question: {question}
+You are an AI language model assistant. Your task is to generate {number_of_queries} 
+different search terms based on the given user question to retrieve relevant documents 
+from a vector database. By generating multiple keyword variations, your goal is to help
+the user overcome some of the limitations of distance-based similarity search. 
+
+Original question: {question}
+
+Return the output strictly as a JSON-style Python list of {number_of_queries} strings. 
+
+Output format:
+[
+    "search term 1",
+    "search term 2",
+    ...
+]
+
+Do not include numbering, explanations, or any extra text.
+
 """
-    }
+    }]
+
 
 
 def evaluation_agent_prompt(current_date=None):

@@ -51,4 +51,4 @@ async def main():
     await pg_client.close()
 
 
-asyncio.run(main())
+# asyncio.run(main())

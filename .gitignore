@@ -13,3 +13,7 @@ env/
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Database files
+app/db/client.py
+

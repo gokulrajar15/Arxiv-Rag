@@ -1,10 +1,12 @@
-from typing import Dict, List, Optional, Any
+from typing import Optional, Annotated
 from pydantic import BaseModel, Field
+from langchain_core.tools.base import InjectedToolCallId
+from langgraph.prebuilt import InjectedState
+
+
 
 class DocumentRetrieverState(BaseModel):
     """State for the Document Retriever tool."""
     query: Optional[str] = Field(None, description="The user query for document retrieval")
-    multi_queries: List[str] = Field(default_factory=list, description="Multiple search queries generated from the original query")
-    query_embeddings: List[List[float]] = Field(default_factory=list, description="Embeddings for each generated query")
-    documents: List[Dict[str, Any]] = Field(default_factory=list, description="Retrieved documents from the database")
-    error: Optional[str] = Field(None, description="Error message if the document retrieval fails")
+    tool_call_id: Annotated[str, InjectedToolCallId] = Field(...)
+    state: Annotated[dict, InjectedState] = Field(...)

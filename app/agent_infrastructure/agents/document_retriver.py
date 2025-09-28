@@ -1,13 +1,18 @@
 import asyncio
 import json
-from typing import List
-from urllib import response
+from typing import List, Annotated
+
 from langchain_core.documents import Document
 from langchain_core.tools import tool
-from app.agent_infrastrure.infrastructure.llm_clients import gpt_41_mini
+from app.agent_infrastructure.infrastructure.llm_clients import gpt_41_mini
 from app.db.client import Database
-from app.agent_infrastrure.infrastructure.embeddings import CustomEmbedding
-from app.agent_infrastrure.prompt_templates import multi_query_retriever_prompt
+from app.agent_infrastructure.infrastructure.embeddings import CustomEmbedding
+from app.agent_infrastructure.prompt_templates import multi_query_retriever_prompt
+from app.schema.langgraph_tools_state import DocumentRetrieverState
+from langchain_core.messages import ToolMessage
+from langgraph.prebuilt import InjectedState
+from langgraph.types import Command
+from langchain_core.tools.base import InjectedToolCallId
 
 embed = CustomEmbedding()
 
@@ -78,42 +83,33 @@ async def process_natural_language_query(query: str, num_queries: int) -> List[L
 
 @tool(
     name_or_callable="document_retriever",
-    description="This tool retrieves the documents relevant to the user query from the database")
+    description="This tool retrieves the documents relevant to the user query from the database",
+    args_schema=DocumentRetrieverState
+)
 
-async def document_retriever(user_query: str) -> list[Document]:
+async def document_retriever(
+    query: str,
+    tool_call_id: Annotated[str, InjectedToolCallId] = None,
+    state: Annotated[dict, InjectedState] = None,
+    ) -> list[Document]:
     """
     Retrieves relevant documents based on a user query using optimized MultiQueryRetriever.
-    
-    This tool performs semantic search using embeddings to find relevant documents 
-    from the database. It uses parallel processing for both embedding generation 
-    and database queries to optimize performance.
 
     Args:
-        user_query (str): The query provided by the user.
+        user_query (str): The user query for document retrieval.
 
     Returns:
         list[Document]: A list of relevant documents.
     """
-    import time
-    start_time = time.time()
     num_queries = 5  # Number of different queries to generate
     try:
-        await Database.init()
-        
-        embedding_start = time.time()
-        query_embeddings, multi_queries = await process_natural_language_query(user_query, num_queries)
-        embedding_time = time.time() - embedding_start
-        print(f"Embedding generation took: {embedding_time:.2f} seconds")
-        
+        query_embeddings, multi_queries = await process_natural_language_query(query, num_queries)
+
         if not query_embeddings:
             print("No query embeddings generated.")
             return []
-     
-        db_start = time.time()
+    
         search_results = await Database.fetch_batch_vector_search(query_vectors = query_embeddings, limit=5)  
-        db_time = time.time() - db_start
-        print(f"Database queries took: {db_time:.2f} seconds")
-        
         documents = [
             Document(
                 page_content=result["abstract"], 
@@ -121,21 +117,23 @@ async def document_retriever(user_query: str) -> list[Document]:
             ) 
             for result in search_results
         ]
-        
         unique_documents = deduplicate_documents(documents)
-        
-        total_time = time.time() - start_time
-        print(f"Total retrieval time: {total_time:.2f} seconds")
-        print(f"Retrieved {len(search_results)} documents, {len(unique_documents)} unique")
-        return unique_documents
 
+        return Command(
+            update={
+                "retrieved_docs": [unique_documents],
+                "messages": [ToolMessage(str(unique_documents), tool_call_id=tool_call_id)]
+            }
+        )
     except Exception as e:
         print(f"Error in document_retriever: {e}")
-        await Database.close()
-        return []
+        return Command(
+            update={
+                "retrieved_docs": [],
+                "messages": [ToolMessage(f"Error: {e}", tool_call_id=tool_call_id)]
+            }
+        )
     
-    finally:
-        await Database.close()
 
 def docs_to_dicts(docs: List[Document]) -> List[dict]:
     """Helper for DeepEval + API responses."""

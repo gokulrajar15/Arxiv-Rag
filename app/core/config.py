@@ -86,14 +86,27 @@ class Settings:
             "An AI-powered research assistant for exploring Arxiv papers."
         )
 
+        self.api_auth_token = os.getenv("api_auth_token")
+
+        self.azure_openai_41_deployment_name = os.getenv("azure_openai_41_deployment_name")
         self.azure_openai_41_endpoint = os.getenv("azure_openai_41_endpoint")
         self.azure_openai_41_api_key = os.getenv("azure_openai_41_api_key")
         self.azure_openai_41_api_version = os.getenv("azure_openai_41_api_version") 
 
+        
+        self.azure_openai_41_mini_deployment_name = os.getenv("azure_openai_41_mini_deployment_name")
         self.azure_openai_41_mini_endpoint = os.getenv("azure_openai_41_mini_endpoint")
         self.azure_openai_41_mini_api_key = os.getenv("azure_openai_41_mini_api_key")
         self.azure_openai_41_mini_api_version = os.getenv("azure_openai_41_mini_api_version")
-        
+
+        self.embedding_api_url = os.getenv("embedding_api_url")
+        self.embedding_auth_token = os.getenv("embedding_auth_token")
+
+        self.guardrails_auth_token = os.getenv("guardrails_auth_token")
+        self.topic_detection_model_url = os.getenv("topic_detection_model_url")
+        self.bias_detection_model_url = os.getenv("bias_detection_model_url")
+        self.toxic_classification_model_url = os.getenv("toxic_classification_model_url")
+           
         self.db_host = os.getenv("HOST")
         self.db_port = os.getenv("PORT")
         self.db_database = os.getenv("DATABASE")

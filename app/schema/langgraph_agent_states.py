@@ -6,5 +6,9 @@ from langgraph.graph.message import add_messages
 
 class MAINAGENTSTATE(AgentState):
     messages: Annotated[list[AnyMessage], add_messages]
+    retrieved_docs: Optional[list[dict]] = None
     date: Optional[str] = None
    
+
+
+

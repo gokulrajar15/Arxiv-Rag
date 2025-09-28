@@ -1,18 +1,12 @@
 import requests 
 import json 
-import os 
+from app.core.config import settings
 
-from dotenv import load_dotenv 
-
-load_dotenv()
-
-
-
-url =  os.getenv("embedding_api_url")
+url = settings.embedding_api_url
 
 headers = { 
     "Content-Type": "application/json", 
-    "Authorization": f"Bearer {os.getenv('auth_token')}"  
+    "Authorization": f"Bearer {settings.embedding_auth_token}"  
 } 
 
 

@@ -17,3 +17,5 @@ __pycache__/
 # Database files
 app/db/client.py
 
+pending_functionality.md
+

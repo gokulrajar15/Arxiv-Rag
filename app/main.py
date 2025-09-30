@@ -31,7 +31,7 @@ class ChatRequest(BaseModel):
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the PRI Globals application!"}
+    return {"message": "Welcome to the ArXiv RAG API"}
 
 
 @app.post("/chat/")

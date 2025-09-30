@@ -46,29 +46,13 @@ if __name__ == "__main__":
             "messages": [
                 {
                     "role": "user",
-                    "content": "hi"
+                    "content": "explain brownian motion"
                 }
             ],
             "retrieved_docs": [],
             "date": current_date
         }
-        prompts = state["messages"][-1]['content']
         response = await rag_agent.ainvoke(state)
-
-        response_ = response["messages"][-1].content
-
-        tool_used = []
-        for msg in response['messages']:
-            if getattr(msg, 'tool_calls', []):
-                tool_used.append(msg.tool_calls[0]['name'])
-        retrieved_docs = response['retrieved_docs']
-
-        eval = await run_deep_eval(
-            user_query=prompts,
-            agent_output=response_,
-            retrieved_docs=retrieved_docs,
-            tools_used=tool_used
-        )
         await Database.close()
         return response
     print(asyncio.run(main()))

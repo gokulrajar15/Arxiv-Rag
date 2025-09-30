@@ -1,7 +1,7 @@
 import asyncio
 import json
 from typing import List, Annotated
-
+from async_lru import alru_cache 
 from langchain_core.documents import Document
 from langchain_core.tools import tool
 from app.agent_infrastructure.infrastructure.llm_clients import gpt_41_mini
@@ -73,25 +73,11 @@ async def process_natural_language_query(query: str, num_queries: int) -> List[L
         List[List[float]]: A list of embeddings for each generated query.
     """
     multi_queries = await multi_query_retriever(query, num_queries)
-    print("multi queries:", multi_queries)
-
     query_embeddings = embed.embed_documents(multi_queries)
-    print(f"Generated {len(query_embeddings)} query embeddings")
-    
-    return query_embeddings, multi_queries
-    
+    return query_embeddings
 
-@tool(
-    name_or_callable="document_retriever",
-    description="This tool retrieves the documents relevant to the user query from the database",
-    args_schema=DocumentRetrieverState
-)
-
-async def document_retriever(
-    query: str,
-    tool_call_id: Annotated[str, InjectedToolCallId] = None,
-    state: Annotated[dict, InjectedState] = None,
-    ) -> list[Document]:
+@alru_cache(maxsize=128)
+async def document_retriever_utils(query: str) -> List[Document]:
     """
     Retrieves relevant documents based on a user query using optimized MultiQueryRetriever.
 
@@ -101,9 +87,9 @@ async def document_retriever(
     Returns:
         list[Document]: A list of relevant documents.
     """
-    num_queries = 5  # Number of different queries to generate
+    num_queries = 5 
     try:
-        query_embeddings, multi_queries = await process_natural_language_query(query, num_queries)
+        query_embeddings = await process_natural_language_query(query, num_queries)
 
         if not query_embeddings:
             print("No query embeddings generated.")
@@ -119,6 +105,33 @@ async def document_retriever(
         ]
         unique_documents = deduplicate_documents(documents)
 
+        return unique_documents
+    except Exception as e:
+        print(f"Error in document_retriever: {e}")
+        return []
+
+
+@tool(
+    name_or_callable="document_retriever",
+    description="This tool retrieves the documents relevant to the user query from the database",
+    args_schema=DocumentRetrieverState
+)
+async def document_retriever(
+    query: str,
+    tool_call_id: Annotated[str, InjectedToolCallId] = None,
+    state: Annotated[dict, InjectedState] = None,
+    ) -> list[Document]:
+    """
+    Retrieves relevant documents based on a user query using optimized MultiQueryRetriever.
+
+    Args:
+        user_query (str): The user query for document retrieval.
+
+    Returns:
+        list[Document]: A list of relevant documents.
+    """
+    try:
+        unique_documents = await document_retriever_utils(query)
         return Command(
             update={
                 "retrieved_docs": [unique_documents],

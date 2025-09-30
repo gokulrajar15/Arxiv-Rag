@@ -1,46 +1,28 @@
-# Use an official Python image
 FROM python:3.11-slim
 
-# Set working directory
-WORKDIR /app
+RUN useradd -m -u 1000 user
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    gcc \
-    curl \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Create a non-root user
-RUN useradd --create-home --shell /bin/bash app \
-    && chown -R app:app /app
-USER app
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH \
+    PYTHONPATH=/home/user/code
 
-# Add user's local bin to PATH
-ENV PATH="/home/app/.local/bin:${PATH}"
+WORKDIR $HOME/code
 
-# Copy pyproject.toml first for better caching
-COPY --chown=app:app pyproject.toml ./
+COPY --chown=user:user pyproject.toml ./
 
-# Install Python dependencies from pyproject.toml
-RUN pip install --user --no-cache-dir .
+RUN uv pip install -r pyproject.toml --system
 
-# Copy application code
-COPY --chown=app:app . .
+RUN mkdir -p $HOME/code && \
+    chown -R user:user $HOME/code
 
-# Set environment variables
-ENV FLASK_APP=app.main:app
-ENV FLASK_ENV=production
-ENV PYTHONPATH=/app
+COPY --chown=user:user app/ ./app/
+COPY --chown=user:user .env ./.env
 
-# Expose Flask port
-EXPOSE 5000
+RUN chown -R user:user $HOME
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:5000/health || exit 1
+USER user
+EXPOSE 80
 
-# Start Flask application with Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--timeout", "120", "app.main:app"]
+CMD ["gunicorn", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "app.main:app", "-b", "0.0.0.0:80"]

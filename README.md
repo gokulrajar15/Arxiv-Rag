@@ -4,7 +4,7 @@ A production-ready, large-scale Retrieval-Augmented Generation (RAG) system desi
 
 ## 🏗️ Architecture Overview
 
-![Functional Architecture](Functional%20architechture.jpg)
+![Functional Architecture](Functional%20architechture.png)
 
 The system follows a distributed, microservices architecture with the following key components:
 

@@ -15,25 +15,55 @@ The system follows a distributed, microservices architecture with the following 
 - **Embedding Service**: Document vectorization using state-of-the-art embedding models
 - **Vector Database**: High-performance storage for 10M+ document embeddings
 - **API Layer**: FastAPI-based REST API for system interactions
-- **Input Guardrails**: Security and validation layer for incoming requests
+- **Input Guardrails**: Multi-layered security and validation system including:
+  - Toxic detection and content filtering
+  - Bias detection mechanisms
+  - Topic limiting controls
+  - Prompt injection prevention
 
 ### Monitoring & Evaluation
 
-- **Agent Monitoring (LangSmith)**: Real-time agent performance tracking
-- **Testing & Evaluation**: Deep evaluation framework with comprehensive metrics
-- **RAG Metrics**: Retrieval accuracy and relevance scoring
-- **Agentic Metrics**: Agent decision-making quality assessment
-- **Safety Metrics**: Content safety and bias detection
-- **Hallucination Metrics**: Response accuracy validation
+- **Agent Monitoring (LangSmith)**: Real-time agent performance tracking and tracing
+- **Testing & Evaluation (DeepEval)**: Comprehensive automated evaluation framework
+- **Multi-Dimensional Metrics**:
+  - **RAG Metrics**: Retrieval accuracy, relevance scoring, and context quality
+  - **Agentic Metrics**: Agent decision-making quality and reasoning assessment
+  - **Safety Metrics**: Content safety validation and bias detection
+  - **Hallucination Metrics**: Response accuracy and factual consistency validation
+- **Async Metrics Collection**: Real-time performance data insertion into metrics database
+- **Evaluation Setup (DeepEval)**: Automated testing pipeline for continuous quality assurance
 
 ### Infrastructure
 
-- **Model Hosting**: Scalable embedding model deployment (embeddinggemma-300m)
-- **Database**: PostgreSQL for metadata and structured data
-- **External Integrations**: Google Colab support for research workflows
-- **Datasets**: Curated ArXiv paper collection with metadata
+- **Model Hosting**: Dual inference engine architecture
+  - **Triton Inference Engine**: High-performance model serving with multiple specialized models:
+    - `distill-roberta-bias`: Bias detection model
+    - `toxic-comment-model`: Content toxicity detection
+    - `bart-large-mnli`: Natural language inference
+  - **LitServe Inference Engine**: Lightweight serving for embedding models:
+    - `gamma-embeddings-300m`: Primary embedding model for document vectorization
+- **Database**: PostgreSQL for metadata and structured data with async insertion capabilities
+- **External Integrations**: Google Colab support for research workflows and dataset management
+- **Datasets**: Curated ArXiv paper collection with metadata and continuous ingestion pipeline
 
-## 🚀 Features
+## � System Workflow
+
+The system processes queries through a sophisticated multi-stage pipeline:
+
+1. **Input Processing**: User queries are received through the UI and processed by the API layer
+2. **Guardrails Validation**: Multi-layered security checks including:
+   - Toxic content detection
+   - Bias assessment
+   - Topic validation
+   - Prompt injection prevention
+3. **AI Agent Processing**: Intelligent query understanding and planning
+4. **Multi-Query Retrieval**: Advanced retrieval with caching mechanisms
+5. **Embedding & Vector Search**: Document vectorization and similarity matching
+6. **Response Generation**: Context-aware response synthesis
+7. **Quality Assurance**: Real-time evaluation and safety checks
+8. **Monitoring & Metrics**: Continuous performance tracking and async metrics collection
+
+## �🚀 Features
 
 - **Large Scale**: Handles 10M+ indexed documents efficiently
 - **AI Agentic**: Intelligent query understanding and multi-step reasoning
@@ -53,22 +83,30 @@ The system follows a distributed, microservices architecture with the following 
 
 ## 🛠️ Technology Stack
 
-- **Backend**: FastAPI, Python
-- **AI/ML**: LangChain, Custom AI Agents
-- **Embeddings**: embeddinggemma-300m
-- **Vector Database**: [Your vector DB choice]
-- **Database**: PostgreSQL
-- **Monitoring**: LangSmith, Custom metrics
-- **Infrastructure**: [Your deployment platform]
+- **Backend**: FastAPI, Python with async capabilities
+- **AI/ML Frameworks**: LangChain, LangGraph for agent orchestration
+- **Model Serving**:
+  - **Triton Inference Server**: Production-grade model hosting
+  - **LitServe**: Lightweight inference engine
+- **Specialized Models**:
+  - **Embeddings**: gamma-embeddings-300m
+  - **Safety Models**: distill-roberta-bias, toxic-comment-model
+  - **NLI Model**: bart-large-mnli
+- **Vector Database**: High-performance vector storage for embeddings
+- **Database**: PostgreSQL with async operations
+- **Monitoring & Evaluation**: 
+  - LangSmith for agent monitoring
+  - DeepEval for automated testing
+- **External Integrations**: Google Colab for dataset management
 
 ## 🔧 Getting Started
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.11
 - PostgreSQL
-- Vector database setup
-- API keys for embedding models
+- Openai API keys for text generation models
+- Need to host embedding and safety models using Triton and LitServe
 
 ### Installation
 

@@ -37,3 +37,10 @@ class CustomEmbedding:
         """Get embedding for a single query using the custom API.""" 
         embeddings = get_embeddings_from_api([query]) 
         return embeddings[0] if embeddings else []
+
+if __name__ == "__main__":
+    # Example usage
+    texts = ["Hello world", "Custom embedding API"]
+    embedding_model = CustomEmbedding()
+    embeddings = embedding_model.embed_documents(texts)
+    print(str(embeddings[0]))

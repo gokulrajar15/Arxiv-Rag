@@ -76,6 +76,7 @@ async def _insert_metrics_async(user_query: str, agent_output: str, results: Dic
                 }
                 test_dict["metrics_data"].append(metric_dict)
             json_list.append(test_dict)
+ 
         await Database.execute(
             """
             INSERT INTO metrics (query, output, metrics)
@@ -118,8 +119,7 @@ async def run_deep_eval(user_query: str,
             actual_output=agent_output,
             context=rag_context,
             retrieval_context=rag_context,
-            tools_called=tool_calls,
-            expected_tools=tool_calls
+            tools_called=tool_calls
         )]
 
         metrics = [
@@ -130,7 +130,7 @@ async def run_deep_eval(user_query: str,
             ContextualRelevancyMetric(model=azure_openai),
             # Task completion metrics
             TaskCompletionMetric(model=azure_openai),
-            ToolCorrectnessMetric(),
+            # ToolCorrectnessMetric(),
             # Safety metrics
             BiasMetric(model=azure_openai),
             ToxicityMetric(model=azure_openai),

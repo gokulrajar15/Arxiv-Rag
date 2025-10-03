@@ -1,0 +1,6 @@
+sentence-transformers
+litserve
+hf_xet
+huggingface-hub>=0.16.0
+numpy>=1.21.0
+fastapi>=0.95.0

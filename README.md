@@ -1,6 +1,17 @@
-# Arxiv-RAG: Production-Grade Large Scale AI Agentic RAG Application
+# Arxiv-RAG: Production-Grade Large Scale AI Agentic RAG Applicat## 🚀 Features
 
-A production-ready, large-scale Retrieval-Augmented Generation (RAG) system designed to handle 10M+ indexed documents from ArXiv papers. This application combines AI agents, advanced retrieval mechanisms, and comprehensive monitoring to deliver accurate and contextual responses for scientific research queries.
+- **Large Scale**: Handles 10M+ indexed documents efficiently
+- **AI Agentic**: Intelligent query understanding and multi-step reasoning
+- **Multi-Query Retrieval**: Enhanced accuracy through diverse retrieval strategies
+- **Production Ready**: Comprehensive monitoring, logging, and error handling
+- **✅ Model Hosting**: Complete inference infrastructure with dual engines
+  - Triton server for guardrails models (ONNX optimized)
+  - LitServe for embedding models (768D vectors)
+  - Docker containerization and cloud deployment ready
+- **Safety First**: Real-time content filtering, bias detection, and toxicity screening
+- **Scalable Architecture**: Microservices design for horizontal scaling
+- **Cloud Integration**: HuggingFace Spaces ready deployment
+- **Real-time Monitoring**: Complete observability stack with metrics and alertsproduction-ready, large-scale Retrieval-Augmented Generation (RAG) system designed to handle 10M+ indexed documents from ArXiv papers. This application combines AI agents, advanced retrieval mechanisms, and comprehensive monitoring to deliver accurate and contextual responses for scientific research queries.
 
 ## 🏗️ Architecture Overview
 
@@ -35,13 +46,17 @@ The system follows a distributed, microservices architecture with the following 
 
 ### Infrastructure
 
-- **Model Hosting**: Dual inference engine architecture
+- **Model Hosting** (✅ **Implemented**): Dual inference engine architecture with complete deployment code
   - **Triton Inference Engine**: High-performance model serving with multiple specialized models:
     - `distill-roberta-bias`: Bias detection model
     - `toxic-comment-model`: Content toxicity detection
     - `bart-large-mnli`: Natural language inference
+    - **Location**: `model_hosting/guardrails_models/`
+    - **Features**: Docker containerization, ONNX optimization, auto-scaling
   - **LitServe Inference Engine**: Lightweight serving for embedding models:
-    - `gamma-embeddings-300m`: Primary embedding model for document vectorization
+    - `embeddinggemma-300m`: Primary embedding model (768D vectors)
+    - **Location**: `model_hosting/gemma_model/`
+    - **Features**: FastAPI integration, HuggingFace Spaces ready, authentication
 - **Database**: PostgreSQL for metadata and structured data with async insertion capabilities
 - **External Integrations**: Google Colab support for research workflows and dataset management
 - **Datasets**: Curated ArXiv paper collection with metadata and continuous ingestion pipeline
@@ -73,25 +88,60 @@ The system processes queries through a sophisticated multi-stage pipeline:
 - **Scalable Architecture**: Microservices design for horizontal scaling
 - **Real-time Monitoring**: Complete observability stack with metrics and alerts
 
+## 🏗️ Model Hosting Architecture
+
+The system includes complete model hosting infrastructure with two specialized engines:
+
+### Guardrails Models (`model_hosting/guardrails_models/`)
+- **Engine**: NVIDIA Triton Inference Server
+- **Models**: 3 specialized safety models
+- **Format**: ONNX optimized for CPU/GPU inference
+- **Features**: 
+  - Automatic model conversion and optimization
+  - Triton server configuration management
+  - Docker containerization with health checks
+  - Batch processing support (max batch size: 8)
+- **Endpoints**: HTTP (8000), gRPC (8001), Metrics (8002)
+
+### Embedding Model (`model_hosting/gemma_model/`)
+- **Engine**: LitServe (Lightning AI)
+- **Model**: Custom fine-tuned Gemma embedding model (768D)
+- **Features**:
+  - FastAPI integration with authentication
+  - HuggingFace Spaces ready deployment
+  - CPU optimized inference
+  - Bearer token security
+- **Endpoint**: HTTP (7860)
+
+### Deployment Options
+1. **Local Docker**: Complete containerized setup
+2. **Docker Compose**: Orchestrated multi-service deployment
+3. **HuggingFace Spaces**: Cloud deployment for embedding model
+4. **Production**: Kubernetes-ready configurations
+
 ## 📊 Performance Metrics
 
 - **Index Size**: 10M+ ArXiv papers
 - **Query Response Time**: Sub-second retrieval
-- **Embedding Model**: Custom-tuned embeddinggemma-300m
+- **Embedding Model**: Custom-tuned EmbeddingGemma-300M (768D vectors)
+- **Model Hosting**: Production-ready inference engines
 - **Concurrent Users**: Supports high-throughput operations
 - **Accuracy Metrics**: Comprehensive evaluation framework
+- **Safety Models**: Real-time content filtering and bias detection
 
 ## 🛠️ Technology Stack
 
 - **Backend**: FastAPI, Python with async capabilities
 - **AI/ML Frameworks**: LangChain, LangGraph for agent orchestration
-- **Model Serving**:
-  - **Triton Inference Server**: Production-grade model hosting
-  - **LitServe**: Lightweight inference engine
-- **Specialized Models**:
-  - **Embeddings**: gamma-embeddings-300m
-  - **Safety Models**: distill-roberta-bias, toxic-comment-model
-  - **NLI Model**: bart-large-mnli
+- **Model Serving** (✅ **Implemented**):
+  - **Triton Inference Server**: Production-grade model hosting with ONNX optimization
+  - **LitServe**: Lightweight inference engine with FastAPI integration
+- **Specialized Models** (✅ **Ready for Deployment**):
+  - **Embeddings**: `GokulRajaR/embeddinggemma-300m-qat-q8_0-unquantized` (768D vectors)
+  - **Safety Models**: `valurank/distilroberta-bias`, `martin-ha/toxic-comment-model`
+  - **NLI Model**: `facebook/bart-large-mnli`
+- **Containerization**: Docker and Docker Compose for all services
+- **Cloud Ready**: HuggingFace Spaces integration for embedding model
 - **Vector Database**: High-performance vector storage for embeddings
 - **Database**: PostgreSQL with async operations
 - **Monitoring & Evaluation**: 
@@ -103,14 +153,65 @@ The system processes queries through a sophisticated multi-stage pipeline:
 
 ### Prerequisites
 
-- Python 3.11
+- Python 3.11+
+- Docker and Docker Compose
 - PostgreSQL
-- Openai API keys for text generation models
-- Need to host embedding and safety models using Triton and LitServe
+- OpenAI API keys for text generation models
+- HuggingFace account and token
+- NVIDIA GPU (optional, recommended for better performance)
 
-### Installation
+### Quick Start
 
-Setup instructions will be provided as the project develops.
+#### 1. Model Hosting Setup
+
+**Guardrails Models (Triton Server)**:
+```bash
+cd model_hosting/guardrails_models
+# Set your HuggingFace token
+$env:HF_TOKEN="your_huggingface_token_here"
+# Build and run
+docker-compose up guardrails-models
+```
+
+**Embedding Model (LitServe)**:
+```bash
+cd model_hosting/gemma_model
+# Set environment variables
+$env:HF_TOKEN="your_huggingface_token_here"
+$env:auth_token="your_api_auth_token"
+# Build and run
+docker build -t gemma-embedding-api .
+docker run -d -p 7860:7860 \
+  -e HF_TOKEN=$env:HF_TOKEN \
+  -e auth_token=$env:auth_token \
+  gemma-embedding-api
+```
+
+**Alternative: Deploy to HuggingFace Spaces**
+- Navigate to `model_hosting/gemma_model/`
+- Follow the README instructions for one-click deployment
+
+#### 2. Main Application Setup
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment variables
+$env:OPENAI_API_KEY="your_openai_api_key"
+$env:HF_TOKEN="your_huggingface_token"
+
+# Run the application
+python -m app.main
+```
+
+For detailed setup instructions, see the respective README files in each component directory.
+
+### 📖 Model Hosting Documentation
+
+- **[Guardrails Models Setup](model_hosting/guardrails_models/README.md)** - NVIDIA Triton server setup for safety models
+- **[Gemma Embedding Model Setup](model_hosting/gemma_model/README.md)** - LitServe API for embedding model (HuggingFace Spaces ready)
+
+## 🛠️ Technology Stack
 
 ## 📋 API Documentation
 
@@ -130,16 +231,6 @@ The system includes comprehensive monitoring at multiple levels:
 - **Safety Checks**: Content appropriateness and bias detection
 - **System Health**: Infrastructure performance and availability
 
-## 🤝 Contributing
-
-Contribution guidelines will be established as the project evolves.
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- ArXiv for providing open access to scientific papers
-- The open-source community for the underlying technologies
-- Research community for evaluation frameworks and best practices

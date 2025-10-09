@@ -1,7 +1,7 @@
 [project]
 name = "arxiv-rag"
 version = "0.1.0"
-description = "Data analysis bot"
+description = "Retrieval augmented generation over arXiv papers"
 requires-python = ">=3.11"
 # Added dependencies here
 dependencies = [

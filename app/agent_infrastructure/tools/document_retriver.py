@@ -158,19 +158,3 @@ def docs_to_dicts(docs: List[Document]) -> List[dict]:
         }
         for d in docs
     ]
-
-async def example_usage():
-    user_query = "Brownian motion"
-    documents = await document_retriever.ainvoke({"user_query": user_query})
-
-    print(f"Retrieved {len(documents)} documents for query: '{user_query}'\n")
-    for i, doc in enumerate(documents, 1):
-        print(f"Document {i}")
-        print(f"Title: {doc.metadata['title']}")
-        print(f"Category: {doc.metadata['category']}")
-        print("Abstract:")
-        print(f"{doc.page_content}")
-        print("-" * 80)  
-
-# if __name__ == "__main__":
-#     asyncio.run(example_usage())

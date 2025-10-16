@@ -230,7 +230,3 @@ The system includes comprehensive monitoring at multiple levels:
 - **Retrieval Quality**: Document relevance and ranking metrics
 - **Safety Checks**: Content appropriateness and bias detection
 - **System Health**: Infrastructure performance and availability
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
